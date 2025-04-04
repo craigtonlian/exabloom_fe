@@ -3,7 +3,7 @@ import startIcon from "../assets/start.png";
 
 export default function StartNode() {
   return (
-    <div className="w-48 h-14 p-2 flex flex-row items-center justify-left bg-white border-2 border-neutral-100 rounded-sm">
+    <div className="w-48 h-14 p-2 flex flex-row items-center justify-left bg-white border-2 border-neutral-100 rounded-sm nodrag">
       <div className="w-12 p-1 pr-2 items-left justify-left">
         <img src={startIcon} alt="Icon" />
       </div>

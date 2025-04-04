@@ -2,30 +2,6 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-/* html,
-body {
-  margin: 0;
-  font-family: sans-serif;
-}
-
-#app {
-  width: 100vw;
-  height: 100vh;
-}
-
-.start-node {
-  border-radius: 5px;
-  border: 1px solid #aaaaaa;
-  font-size: 8px;
-}
-
-.end-node {
-  border-radius: 30px;
-  background-color: #eeeeee;
-  border: 1px solid #acacac;
-  font-size: 8px;
-  color: #acacac;
-} */
 
 :root {
   --radius: 0.625rem;

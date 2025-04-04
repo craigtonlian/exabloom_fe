@@ -18,8 +18,6 @@ export default function AddEdge(props: EdgeProps) {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
 
   const onAddEdgeClick = () => {
-    console.log(`AddEdge has been clicked!`);
-
     const nodes = getNodes();
     const edges = getEdges();
     const sourceNode = nodes.find((n) => n.id === props.source);
@@ -35,8 +33,6 @@ export default function AddEdge(props: EdgeProps) {
     }
 
     const newNodeId = `node-${+new Date()}`;
-    const actionNodes = nodes.filter((n) => n.type === "actionNode");
-    const actionLabel = `Action ${actionNodes.length + 1}`;
 
     // Position new node between source and target
     const newX = targetNode.position.x; //(sourceNode.position.x + targetNode.position.x) / 2;
@@ -45,7 +41,7 @@ export default function AddEdge(props: EdgeProps) {
     const newNode: Node = {
       id: newNodeId,
       type: "actionNode",
-      data: { actionName: actionLabel },
+      data: { actionName: "Action Node" },
       position: { x: newX, y: newY },
     };
 
@@ -105,7 +101,7 @@ export default function AddEdge(props: EdgeProps) {
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             pointerEvents: "all",
           }}
-          className="nodrag nopan"
+          className="nodrag nopan cursor-pointer"
           onClick={onAddEdgeClick}
         >
           <Plus size={16} />

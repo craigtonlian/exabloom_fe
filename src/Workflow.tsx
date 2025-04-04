@@ -4,8 +4,6 @@ import {
   ReactFlow,
   Controls,
   Background,
-  applyNodeChanges,
-  applyEdgeChanges,
   Edge,
   useNodesState,
   useEdgesState,
@@ -52,12 +50,6 @@ const initialNodes: Node[] = [
     position: { x: 100, y: 150 },
     type: "endNode",
   },
-  {
-    id: "3",
-    data: { actionName: "Action 1" },
-    position: { x: -200, y: 150 },
-    type: "actionNode",
-  },
 ];
 
 export default function Workflow() {
@@ -69,23 +61,23 @@ export default function Workflow() {
   const onConnect = useCallback(
     (connection: Connection) => {
       const edge = { ...connection, type: "addEdge" };
-      setEdges((eds) => addEdge(edge, eds));
+      setEdges((es) => addEdge(edge, es));
     },
     [setEdges]
   );
 
-  const onNodeClick = useCallback((id: any, node: Node) => {
+  const onNodeClick = useCallback((_: any, node: Node) => {
     if (node.type === "actionNode") {
       setSelectedNode(node);
       setSheetOpen(true);
     }
   }, []);
 
-  const handleActionNameChange = (newLabel: string) => {
-    setNodes((nds) =>
-      nds.map((n) =>
+  const handleActionNameChange = (newActionName: string) => {
+    setNodes((ns) =>
+      ns.map((n) =>
         n.id === selectedNode?.id
-          ? { ...n, data: { ...n.data, label: newLabel } }
+          ? { ...n, data: { ...n.data, actionName: newActionName } }
           : n
       )
     );
@@ -102,7 +94,8 @@ export default function Workflow() {
       ns
         .filter((n) => n.id !== selectedNode.id)
         .map((n) =>
-          n.position.y > selectedNode.position.y
+          n.position.y > selectedNode.position.y &&
+          n.position.x === selectedNode.position.x
             ? {
                 ...n,
                 position: {
