@@ -1,24 +1,21 @@
-import { Handle, Position } from '@xyflow/react';
+import { Handle, Position } from "@xyflow/react";
+import square from "../assets/square.png";
 
 export default function StartNode() {
-    return (
-        <div className="w-48 h-14 flex flex-row items-center justify-left p-2 bg-gray-200 border-2 border-gray-500 rounded-xl">
-            <div className="w-12 items-left justify-left bg-gray-200 border-1 border-gray-500">
-                <img src="../assets/comment.png" alt="Icon" />
-            </div>
-            <div className="w-30 flex flex-col bg-gray-200 border-1 border-gray-500">
-                <div>
-                    <span className="text-sm font-bold text-green-500">
-                        Start Node
-                    </span>
-                </div>
-                <div>
-                    <span className="text-sm text-gray-500">
-                        Start
-                    </span>
-                </div>
-            </div>
-            <Handle className="invisible" type='source' position={Position.Bottom} />
+  return (
+    <div className="w-48 h-14 p-2 flex flex-row items-center justify-left  bg-white border-2 border-neutral-100 rounded-sm">
+      <div className="w-12 p-1 pr-2 items-left justify-left">
+        <img src={square} alt="Icon" />
+      </div>
+      <div className="w-30 flex flex-col justify-center items-start">
+        <div>
+          <span className="text-sm font-bold text-lime-600">Start Node</span>
         </div>
-    );
+        <div>
+          <span className="text-sm text-black">Start</span>
+        </div>
+      </div>
+      <Handle className="invisible" type="source" position={Position.Bottom} />
+    </div>
+  );
 }

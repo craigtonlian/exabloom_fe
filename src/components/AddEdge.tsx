@@ -1,61 +1,58 @@
 import {
-    BaseEdge,
-    EdgeLabelRenderer,
-    EdgeProps,
-    getStraightPath,
-    StepEdge,
-    useReactFlow,
-} from '@xyflow/react';
+  EdgeLabelRenderer,
+  EdgeProps,
+  getStraightPath,
+  StepEdge,
+  useReactFlow,
+  getBezierPath,
+  BezierEdge,
+  BaseEdge,
+} from "@xyflow/react";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function AddEdge(props: EdgeProps) {
-    const {
-        id,
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-    } = props;
+  const {
+    id,
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  } = props;
 
-    const { setEdges, setNodes } = useReactFlow();
+  const onAddEdgeClick = () => {
+    window.alert(`AddEdge has been clicked!`);
+  };
 
-    const [edgePath, labelX, labelY] = getStraightPath({
-        sourceX,
-        sourceY,
-        targetX,
-        targetY,
-    });
+  // const { setEdges, setNodes } = useReactFlow();
 
-    return (
-        <>
-            <StepEdge {...props} />
-            <EdgeLabelRenderer>
-                <button
-                    style={{
-                        position: 'absolute',
-                        transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-                        pointerEvents: 'all',
-                    }}
-                    onClick={() => {
-                        setNodes((nds) => [
-                            ...nds,
-                            {
-                                id: `${nds.length + 1}`,
-                                type: 'actionNode',
-                                position: { x: labelX - 10 / 2, y: labelY - 10 / 2 },
-                                data: { label: `Node ${nds.length + 1}` },
-                            },
-                        ]);
-                        setEdges((eds) => [
-                            ...eds,
-                            { id: `${id}-99`, source: id, target: `99`, type: 'addEdge' },
-                            { id: `99-${id}`, source: `99`, target: id, type: 'addEdge' },
-                        ]);
+  const [edgePath, labelX, labelY] = getBezierPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
 
-                    }}
-                >
-                    +
-                </button>
-            </EdgeLabelRenderer>
-        </>
-    );
+  return (
+    <>
+      <BezierEdge {...props} />
+      <EdgeLabelRenderer>
+        <Button
+          style={{
+            position: "absolute",
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            pointerEvents: "all",
+          }}
+          className="nodrag nopan"
+          onClick={onAddEdgeClick}
+        >
+          <Plus size={16} />
+        </Button>
+      </EdgeLabelRenderer>
+    </>
+  );
 }
