@@ -1,24 +1,23 @@
-import { Handle, Position } from '@xyflow/react';
+import type { Node, NodeProps } from "@xyflow/react";
+import { Handle, Position } from "@xyflow/react";
+import actionIcon from "../assets/action.png";
 
-export default function ActionNode() {
-    return (
-        <div
-            style={{ display: 'flex' }}
-            className="p-4 bg-gray-100 rounded-md"
-            onClick={() => {
-                console.log('Action Node clicked');
-            }}
-        >
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', border: '1px solid blue', background: '#e0ffe0' }}>
-                <img src="/assets/comment.png" alt="Icon" />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid red', background: '#eee000' }}>
-                <span style={{ fontSize: 'small', color: 'green' }}>
-                    Action Node
-                </span>
-            </div>
-            <Handle type='source' position={Position.Bottom} />
-            <Handle type='target' position={Position.Top} />
+type ActionNode = Node<{ actionName: string }, "actionName">;
+
+export default function ActionNode({ data }: NodeProps<ActionNode>) {
+  return (
+    <div className="w-48 h-14 p-2 flex flex-row items-center justify-left bg-white border-2 border-neutral-100 rounded-sm">
+      <div className="w-12 p-1 pr-2 items-left justify-left">
+        <img src={actionIcon} alt="Icon" />
+      </div>
+      <div className="w-30 flex flex-col justify-center items-start">
+        <div>
+          <span className="text-xs text-black">
+            {data.actionName ?? "TEST STRING"}
+          </span>
         </div>
-    );
+      </div>
+      <Handle className="invisible" type="source" position={Position.Bottom} />
+    </div>
+  );
 }

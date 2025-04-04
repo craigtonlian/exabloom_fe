@@ -1,4 +1,6 @@
 import {
+  type Node,
+  type Edge,
   EdgeLabelRenderer,
   EdgeProps,
   getStraightPath,
@@ -22,11 +24,43 @@ export default function AddEdge(props: EdgeProps) {
     targetPosition,
   } = props;
 
+  // const onAddEdgeClick = () => {
+  //   window.alert(`AddEdge has been clicked!`);
+  // };
+
   const onAddEdgeClick = () => {
     window.alert(`AddEdge has been clicked!`);
-  };
 
-  // const { setEdges, setNodes } = useReactFlow();
+    const { getNodes, setNodes, setEdges } = useReactFlow();
+
+    const nodes = getNodes();
+    const targetNode = nodes.find((n) => n.id === props.target);
+
+    if (!targetNode) return;
+
+    const newNodeId = `node-${+new Date()}`;
+
+    const newNode: Node = {
+      id: newNodeId,
+      type: "actionNode",
+      data: { actionName: "New Action" },
+      position: {
+        x: targetNode.position.x,
+        y: targetNode.position.y + 150,
+      },
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+
+    const newEdge: Edge = {
+      id: `${props.target}-${newNodeId}`,
+      source: newNodeId,
+      target: props.target,
+      type: "addEdge",
+    };
+
+    setEdges((eds) => [...eds, newEdge]);
+  };
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,

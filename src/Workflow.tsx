@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import {
+  type Node,
   ReactFlow,
   Controls,
   Background,
-  Node,
   applyNodeChanges,
   applyEdgeChanges,
   Edge,
@@ -17,6 +17,7 @@ import StartNode from "./components/StartNode";
 import EndNode from "./components/EndNode";
 import ActionNode from "./components/ActionNode";
 import AddEdge from "./components/AddEdge";
+import ActionNodeSheet from "./components/ActionNodeSheet";
 
 const nodeTypes = {
   startNode: StartNode,
@@ -50,11 +51,19 @@ const initialNodes: Node[] = [
     position: { x: 100, y: 200 },
     type: "endNode",
   },
+  {
+    id: "3",
+    data: { actionName: "Action 1" },
+    position: { x: 100, y: 400 },
+    type: "actionNode",
+  },
 ];
 
 export default function Workflow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -64,6 +73,35 @@ export default function Workflow() {
     [setEdges]
   );
 
+  const onNodeClick = useCallback((id: any, node: Node) => {
+    if (node.type === "actionNode") {
+      setSelectedNode(node);
+      setSheetOpen(true);
+    }
+  }, []);
+
+  const handleLabelChange = (newLabel: string) => {
+    setNodes((nds) =>
+      nds.map((n) =>
+        n.id === selectedNode?.id
+          ? { ...n, data: { ...n.data, label: newLabel } }
+          : n
+      )
+    );
+  };
+
+  const handleDelete = () => {
+    if (!selectedNode) return;
+    setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
+    setEdges((eds) =>
+      eds.filter(
+        (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
+      )
+    );
+    setSelectedNode(null);
+    setSheetOpen(false);
+  };
+
   return (
     <div style={{ height: "100%", width: "100%", border: "1px solid black" }}>
       <ReactFlow
@@ -72,12 +110,21 @@ export default function Workflow() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         fitView
       >
         <Background />
       </ReactFlow>
+
+      <ActionNodeSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        node={selectedNode}
+        onLabelChange={handleLabelChange}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
