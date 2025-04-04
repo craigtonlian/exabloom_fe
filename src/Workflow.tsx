@@ -13,6 +13,7 @@ import {
   addEdge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { NODE_VERTICAL_SPACING } from "@/constants";
 import StartNode from "./components/StartNode";
 import EndNode from "./components/EndNode";
 import ActionNode from "./components/ActionNode";
@@ -48,13 +49,13 @@ const initialNodes: Node[] = [
   {
     id: "2",
     data: {},
-    position: { x: 100, y: 200 },
+    position: { x: 100, y: 150 },
     type: "endNode",
   },
   {
     id: "3",
     data: { actionName: "Action 1" },
-    position: { x: 100, y: 400 },
+    position: { x: -200, y: 150 },
     type: "actionNode",
   },
 ];
@@ -80,7 +81,7 @@ export default function Workflow() {
     }
   }, []);
 
-  const handleLabelChange = (newLabel: string) => {
+  const handleActionNameChange = (newLabel: string) => {
     setNodes((nds) =>
       nds.map((n) =>
         n.id === selectedNode?.id
@@ -89,21 +90,52 @@ export default function Workflow() {
       )
     );
   };
-
-  const handleDelete = () => {
+  const handleDeleteActionNode = () => {
     if (!selectedNode) return;
-    setNodes((nds) => nds.filter((n) => n.id !== selectedNode.id));
-    setEdges((eds) =>
-      eds.filter(
+
+    // Find edges connected to the selected node
+    const incomingEdge = edges.find((e) => e.target === selectedNode.id);
+    const outgoingEdge = edges.find((e) => e.source === selectedNode.id);
+
+    // Remove the selected node and its edges
+    setNodes((ns) =>
+      ns
+        .filter((n) => n.id !== selectedNode.id)
+        .map((n) =>
+          n.position.y > selectedNode.position.y
+            ? {
+                ...n,
+                position: {
+                  ...n.position,
+                  y: n.position.y - NODE_VERTICAL_SPACING,
+                },
+              }
+            : n
+        )
+    );
+    setEdges((es) =>
+      es.filter(
         (e) => e.source !== selectedNode.id && e.target !== selectedNode.id
       )
     );
+
+    // Create new edge if both incoming and outgoing edges exist
+    if (incomingEdge && outgoingEdge) {
+      const newEdge = {
+        id: `${incomingEdge.source}-${outgoingEdge.target}`,
+        source: incomingEdge.source,
+        target: outgoingEdge.target,
+        type: "addEdge",
+      };
+      setEdges((es) => [...es, newEdge]);
+    }
+
     setSelectedNode(null);
     setSheetOpen(false);
   };
 
   return (
-    <div style={{ height: "100%", width: "100%", border: "1px solid black" }}>
+    <div className="w-[100vw] h-[100vh]">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -116,14 +148,15 @@ export default function Workflow() {
         fitView
       >
         <Background />
+        <Controls />
       </ReactFlow>
 
       <ActionNodeSheet
+        node={selectedNode}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        node={selectedNode}
-        onLabelChange={handleLabelChange}
-        onDelete={handleDelete}
+        onActionNameChange={handleActionNameChange}
+        onDeleteActionNode={handleDeleteActionNode}
       />
     </div>
   );

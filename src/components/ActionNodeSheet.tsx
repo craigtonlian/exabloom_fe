@@ -1,66 +1,83 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import ActionNode from "./ActionNode";
+import { type Node } from "@xyflow/react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
+  SheetFooter,
 } from "@/components/ui/sheet";
+
+type ActionNodeData = {
+  actionName?: string;
+};
 
 type ActionNodeSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  node: Node | null;
-  onLabelChange: (label: string) => void;
-  onDelete: () => void;
+  node: (Node & { data?: ActionNodeData }) | null;
+  handleActionNameChange: (label: string) => void;
+  onDeleteActionNode: () => void;
 };
 
 export default function ActionNodeSheet({
   open,
   onOpenChange,
   node,
-  onLabelChange,
-  onDelete,
+  handleActionNameChange,
+  onDeleteActionNode,
 }: ActionNodeSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[60vw] p-2">
+      <SheetContent side="right" className="w-[30vw]">
         <SheetHeader>
           <SheetTitle>Action</SheetTitle>
           <SheetDescription>Update contact</SheetDescription>
         </SheetHeader>
 
-        <hr className="-mx-2" />
+        <hr />
 
-        <div className="grid gap-6 py-2">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="actionName" className="text-right">
-              Action Name
-            </Label>
-            <Input
-              id="actionName"
-              className="col-span-3"
-              value="" // value={node.data?.label ?? ""}
-              onChange={(e) => onLabelChange(e.target.value)}
-            />
+        <div className="px-4">
+          <Label htmlFor="actionName" className="pb-3">
+            Action Name
+          </Label>
+          <Input
+            id="actionName"
+            value={node?.data?.actionName ?? ""}
+            onChange={(e) => handleActionNameChange(e.target.value)}
+          />
+
+          <div className="flex items-center space-x-2 mt-10">
+            <Label className="pb-3">+ Add field</Label>
           </div>
         </div>
 
-        <div className="flex justify-between items-center mt-8">
-          <Button variant="destructive" onClick={onDelete}>
-            Delete
-          </Button>
-
-          <div className="space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+        <SheetFooter className="mt-auto">
+          <div className="flex justify-between items-center">
+            <Button
+              variant="outline"
+              className="bg-rose-100 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white"
+              onClick={onDeleteActionNode}
+            >
+              Delete
             </Button>
-            <Button onClick={() => onOpenChange(false)}>Save</Button>
+
+            <div className="space-x-2">
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-violet-700 text-white hover:bg-violet-800"
+                onClick={() => onOpenChange(false)}
+              >
+                Save
+              </Button>
+            </div>
           </div>
-        </div>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

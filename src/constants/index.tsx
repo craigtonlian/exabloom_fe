@@ -1,0 +1,1 @@
+export const NODE_VERTICAL_SPACING = 150;

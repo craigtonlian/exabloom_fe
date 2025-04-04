@@ -18,6 +18,7 @@ export default function ActionNode({ data }: NodeProps<ActionNode>) {
         </div>
       </div>
       <Handle className="invisible" type="source" position={Position.Bottom} />
+      <Handle className="invisible" type="target" position={Position.Top} />
     </div>
   );
 }
