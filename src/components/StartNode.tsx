@@ -1,3 +1,4 @@
+import { NODE_LABELS } from "@/constants";
 import { Handle, Position } from "@xyflow/react";
 import startIcon from "../assets/start.png";
 
@@ -9,7 +10,9 @@ export default function StartNode() {
       </div>
       <div className="w-30 flex flex-col justify-center items-start">
         <div>
-          <span className="text-xs font-bold text-lime-600">Start Node</span>
+          <span className="text-xs font-bold text-lime-600">
+            {NODE_LABELS.START_NODE}
+          </span>
         </div>
         <div>
           <span className="text-xs text-black">Start</span>
