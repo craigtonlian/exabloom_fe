@@ -9,6 +9,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { NODE_TYPES } from "@/constants";
 import { CustomNode } from "@/types/nodes";
 import { XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -40,7 +41,7 @@ export default function EditNodeSheet({
     if (!node) return;
     setLabel(node.data.label ?? "");
 
-    if (node?.type === "ifElseNode") {
+    if (node?.type === NODE_TYPES.IF_ELSE_NODE) {
       setBranches(node.data.branches ?? []);
       setElseValue(node.data.else ?? "");
     }
@@ -50,7 +51,7 @@ export default function EditNodeSheet({
     e.preventDefault();
     onLabelChange(label);
 
-    if (node?.type === "ifElseNode") {
+    if (node?.type === NODE_TYPES.IF_ELSE_NODE) {
       onBranchesChange(branches);
       onElseChange(elseValue);
     }
@@ -122,7 +123,7 @@ export default function EditNodeSheet({
               </div>
             </SheetFooter>
           </form>
-        ) : node?.type === "ifElseNode" ? (
+        ) : node?.type === NODE_TYPES.IF_ELSE_NODE ? (
           <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <div className="px-4">
               <Label htmlFor="label" className="pb-3">

@@ -1,6 +1,6 @@
 import { NODE_LABELS } from "@/constants";
 import { Handle, Position } from "@xyflow/react";
-import startIcon from "../assets/start.png";
+import startIcon from "../../assets/start.png";
 
 export default function StartNode() {
   return (

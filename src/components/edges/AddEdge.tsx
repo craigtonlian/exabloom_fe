@@ -26,7 +26,7 @@ import {
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useEditNode } from "./EditNodeContext";
+import { useEditNode } from "../EditNodeContext";
 
 export default function AddEdge(props: EdgeProps) {
   const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } =

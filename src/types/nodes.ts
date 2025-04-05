@@ -1,7 +1,8 @@
+import { NODE_TYPES } from "@/constants";
 import { Node } from "@xyflow/react";
 
 export type ActionNode = Node & {
-  type: "actionNode";
+  type: NODE_TYPES.ACTION_NODE;
   data: ActionNodeData;
 };
 
@@ -10,7 +11,7 @@ export type ActionNodeData = {
 };
 
 export type IfElseNode = Node & {
-  type: "ifElseNode";
+  type: NODE_TYPES.IF_ELSE_NODE;
   data: IfElseNodeData;
 };
 

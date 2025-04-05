@@ -17,16 +17,16 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
-import ActionNode from "./components/ActionNode";
-import AddEdge from "./components/AddEdge";
-import BranchNode from "./components/BranchNode";
+import AddEdge from "./components/edges/AddEdge";
+import NormalEdge from "./components/edges/NormalEdge";
 import { useEditNode } from "./components/EditNodeContext";
 import EditNodeSheet from "./components/EditNodeSheet";
-import ElseNode from "./components/ElseNode";
-import EndNode from "./components/EndNode";
-import IfElseNode from "./components/IfElseNode";
-import NormalEdge from "./components/NormalEdge";
-import StartNode from "./components/StartNode";
+import ActionNode from "./components/nodes/ActionNode";
+import BranchNode from "./components/nodes/BranchNode";
+import ElseNode from "./components/nodes/ElseNode";
+import EndNode from "./components/nodes/EndNode";
+import IfElseNode from "./components/nodes/IfElseNode";
+import StartNode from "./components/nodes/StartNode";
 import { CustomNode } from "./types/nodes";
 
 const initialEdges: Edge[] = [
@@ -34,7 +34,7 @@ const initialEdges: Edge[] = [
     id: uuidv4(),
     source: "1",
     target: "2",
-    type: "addEdge",
+    type: EDGE_TYPES.ADD_EDGE,
   },
 ];
 
@@ -43,13 +43,13 @@ const initialNodes: Node[] = [
     id: "1",
     data: { label: "Start Node" },
     position: { x: 300, y: 300 },
-    type: "startNode",
+    type: NODE_TYPES.START_NODE,
   },
   {
     id: "2",
     data: { label: "End Node" },
     position: { x: 300, y: 450 },
-    type: "endNode",
+    type: NODE_TYPES.END_NODE,
   },
 ];
 
@@ -149,7 +149,7 @@ export default function Workflow() {
         id: `${incomingEdge.source}-${outgoingEdge.target}`,
         source: incomingEdge.source,
         target: outgoingEdge.target,
-        type: "addEdge",
+        type: EDGE_TYPES.ADD_EDGE,
       };
       setEdges((es) => [...es, newEdge]);
     }
@@ -169,6 +169,7 @@ export default function Workflow() {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         nodeOrigin={[0.5, 0.5]}
+        deleteKeyCode={[]}
         fitView
       >
         <Background />
