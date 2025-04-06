@@ -10,18 +10,20 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { NODE_TYPES } from "@/constants";
-import { CustomNode } from "@/types/nodes";
+import { BranchNode, EditableNode, ElseNode } from "@/types/nodes";
+import { useReactFlow } from "@xyflow/react";
 import { XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 type EditNodeSheetProps = {
-  node: CustomNode | null;
+  node: EditableNode | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLabelChange: (label: string) => void;
   onDelete: () => void;
-  onBranchesChange: (branches: string[]) => void;
-  onElseChange: (elseValue: string) => void;
+  onBranchesChange: (branchNodes: BranchNode[]) => void;
+  onElseChange: (elseNode: ElseNode, branchCount: number) => void;
 };
 
 export default function EditNodeSheet({
@@ -34,26 +36,58 @@ export default function EditNodeSheet({
   onElseChange,
 }: EditNodeSheetProps) {
   const [label, setLabel] = useState<string>("");
-  const [branches, setBranches] = useState<string[]>([]);
-  const [elseValue, setElseValue] = useState<string>("");
+  const [branchNodes, setBranchNodes] = useState<BranchNode[]>();
+  const [elseNode, setElseNode] = useState<ElseNode>();
+
+  const { getNodes } = useReactFlow();
 
   useEffect(() => {
     if (!node) return;
-    setLabel(node.data.label ?? "");
+    setLabel(node.data?.label ?? "");
 
     if (node?.type === NODE_TYPES.IF_ELSE_NODE) {
-      setBranches(node.data.branches ?? []);
-      setElseValue(node.data.else ?? "");
+      const nodes = getNodes();
+      const initialBranches = (node.data.branches ?? [])
+        .map((branchId) => {
+          const branchNode = nodes.find((n) => n.id === branchId);
+          return branchNode;
+        })
+        .filter((n): n is BranchNode => !!n);
+      setBranchNodes(initialBranches);
+
+      const foundElseNode = nodes.find(
+        (n) => n.id === node.data.else && n.type === NODE_TYPES.ELSE_NODE
+      );
+
+      if (foundElseNode) {
+        setElseNode(foundElseNode as ElseNode);
+      }
     }
   }, [node]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!label.trim()) {
+      alert("Node label cannot be empty!");
+      return;
+    }
+
     onLabelChange(label);
 
     if (node?.type === NODE_TYPES.IF_ELSE_NODE) {
-      onBranchesChange(branches);
-      onElseChange(elseValue);
+      if (branchNodes) {
+        onBranchesChange(branchNodes);
+
+        const branchCount = branchNodes.length; // +1 for the else node
+
+        if (elseNode) {
+          setTimeout(() => {
+            onElseChange(elseNode, branchCount);
+          }, 0);
+        }
+      } else if (elseNode) {
+        onElseChange(elseNode, 0);
+      }
     }
 
     onOpenChange(false);
@@ -63,13 +97,13 @@ export default function EditNodeSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[30vw]"
+        className="w-[40vw]"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <SheetHeader>
           <SheetTitle>Edit</SheetTitle>
           <SheetDescription>
-            {node?.type === "actionNode"
+            {node?.type === NODE_TYPES.ACTION_NODE
               ? "Edit Action Node"
               : "Edit If-Else Node"}
           </SheetDescription>
@@ -77,7 +111,7 @@ export default function EditNodeSheet({
 
         <hr className="-mt-3 mb-2" />
 
-        {node?.type === "actionNode" ? (
+        {node?.type === NODE_TYPES.ACTION_NODE ? (
           <form onSubmit={handleSubmit} className="flex flex-col h-full">
             <div className="px-4">
               <Label htmlFor="label" className="pb-3">
@@ -90,7 +124,13 @@ export default function EditNodeSheet({
               />
 
               <div className="flex items-center space-x-2 mt-10">
-                <Label className="pb-3">+ Add field</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => console.log("Add field clicked!")}
+                >
+                  + Add field
+                </Button>
               </div>
             </div>
 
@@ -138,24 +178,33 @@ export default function EditNodeSheet({
               <div className="mt-10">
                 <Label className="pb-3 font-bold">Branches</Label>
                 <div>
-                  {branches.map((branch, index) => (
+                  {branchNodes?.map((branchNode, index) => (
                     <div
-                      key={index}
+                      key={branchNode.id}
                       className="flex items-center space-x-2 mb-2"
                     >
                       <Input
-                        value={branch}
+                        value={branchNode.data.label}
                         onChange={(e) => {
-                          const newBranches = [...branches];
-                          newBranches[index] = e.target.value;
-                          setBranches(newBranches);
+                          const updated = [...branchNodes];
+                          updated[index] = {
+                            ...branchNode,
+                            data: { ...branchNode.data, label: e.target.value },
+                          };
+                          setBranchNodes(updated);
                         }}
                       />
                       <Button
                         variant="ghost"
                         type="button"
                         onClick={() => {
-                          setBranches(branches.filter((_, i) => i !== index));
+                          if (branchNodes.length === 1) {
+                            alert("Cannot delete the last branch!");
+                            return;
+                          }
+                          setBranchNodes(
+                            branchNodes.filter((_, i) => i !== index)
+                          );
                         }}
                       >
                         <XIcon className="size-4" />
@@ -168,9 +217,16 @@ export default function EditNodeSheet({
                     variant="ghost"
                     type="button"
                     onClick={() =>
-                      setBranches([
-                        ...branches,
-                        `Branch #${branches.length + 1}`,
+                      setBranchNodes([
+                        ...(branchNodes ?? []),
+                        {
+                          id: uuidv4(),
+                          type: NODE_TYPES.BRANCH_NODE,
+                          data: {
+                            label: `Branch #${(branchNodes?.length ?? 0) + 1}`,
+                          },
+                          position: { x: 100, y: 100 },
+                        },
                       ])
                     }
                   >
@@ -183,8 +239,15 @@ export default function EditNodeSheet({
                 <Label className="pb-3 font-bold">Else</Label>
                 <Input
                   id="else"
-                  value={elseValue}
-                  onChange={(e) => setElseValue(e.target.value)}
+                  value={elseNode?.data.label ?? ""}
+                  onChange={(e) => {
+                    if (elseNode) {
+                      setElseNode({
+                        ...elseNode,
+                        data: { ...elseNode.data, label: e.target.value },
+                      });
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -218,7 +281,116 @@ export default function EditNodeSheet({
               </div>
             </SheetFooter>
           </form>
-        ) : null}
+        ) : // <form onSubmit={handleSubmit} className="flex flex-col h-full">
+        //   <div className="px-4">
+        //     <Label htmlFor="label" className="pb-3">
+        //       Label
+        //     </Label>
+        //     <Input
+        //       id="label"
+        //       value={label}
+        //       onChange={(e) => setLabel(e.target.value)}
+        //     />
+
+        //     <div className="mt-10">
+        //       <Label className="pb-3 font-bold">Branches</Label>
+        //       <div>
+        //         {branches.map((branchId, index) => {
+        //           let branchNode, branchLabel;
+
+        //           if (Array.isArray(node?.data?.nodes)) {
+        //             branchNode = node?.data?.nodes?.find(
+        //               (n) => n.id === branchId
+        //             );
+        //             branchLabel = branchNode?.data?.label ?? "";
+        //           }
+
+        //           return (
+        //             <div
+        //               key={index}
+        //               className="flex items-center space-x-2 mb-2"
+        //             >
+        //               <Input
+        //                 value={branchLabel}
+        //                 onChange={(e) => {
+        //                   const newBranches = [...branches];
+        //                   newBranches[index] = e.target.value;
+        //                   setBranches(newBranches);
+        //                 }}
+        //               />
+        //               <Button
+        //                 variant="ghost"
+        //                 type="button"
+        //                 onClick={() => {
+        //                   if (branches.length === 1) {
+        //                     alert("Cannot delete the last branch!");
+        //                     return;
+        //                   }
+        //                   setBranches(branches.filter((_, i) => i !== index));
+        //                 }}
+        //               >
+        //                 <XIcon className="size-4" />
+        //               </Button>
+        //             </div>
+        //           );
+        //         })}
+        //       </div>
+        //       <div className="flex justify-end">
+        //         <Button
+        //           variant="ghost"
+        //           type="button"
+        //           onClick={() =>
+        //             setBranches([
+        //               ...branches,
+        //               `Branch #${branches.length + 1}`,
+        //             ])
+        //           }
+        //         >
+        //           + Add branch
+        //         </Button>
+        //       </div>
+        //     </div>
+
+        //     <div className="mt-10">
+        //       <Label className="pb-3 font-bold">Else</Label>
+        //       <Input
+        //         id="else"
+        //         value={elseValue}
+        //         onChange={(e) => setElseValue(e.target.value)}
+        //       />
+        //     </div>
+        //   </div>
+
+        //   <SheetFooter className="mt-auto">
+        //     <div className="flex justify-between items-center">
+        //       <Button
+        //         type="button"
+        //         variant="outline"
+        //         className="bg-rose-100 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white"
+        //         onClick={onDelete}
+        //       >
+        //         Delete
+        //       </Button>
+
+        //       <div className="space-x-2">
+        //         <Button
+        //           type="button"
+        //           variant="ghost"
+        //           onClick={() => onOpenChange(false)}
+        //         >
+        //           Cancel
+        //         </Button>
+        //         <Button
+        //           type="submit"
+        //           className="bg-violet-700 text-white hover:bg-violet-800"
+        //         >
+        //           Save
+        //         </Button>
+        //       </div>
+        //     </div>
+        //   </SheetFooter>
+        // </form>
+        null}
       </SheetContent>
     </Sheet>
   );

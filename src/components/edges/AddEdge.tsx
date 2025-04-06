@@ -14,6 +14,8 @@ import {
   NODE_TYPES,
   NODE_VERTICAL_SPACING,
 } from "@/constants";
+import { getDescendantsBFS } from "@/lib/utils";
+import { AllNode } from "@/types/nodes";
 import {
   type Edge,
   EdgeLabelRenderer,
@@ -26,7 +28,6 @@ import {
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { useEditNode } from "../EditNodeContext";
 
 export default function AddEdge(props: EdgeProps) {
   const { sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition } =
@@ -35,7 +36,6 @@ export default function AddEdge(props: EdgeProps) {
   const { getNodes, getEdges, setNodes, setEdges } = useReactFlow();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const { setSelectedNode, setSheetOpen } = useEditNode();
 
   const onAddEdgeClick = (nodeTypeSelected: string) => {
     const nodes = getNodes();
@@ -48,7 +48,7 @@ export default function AddEdge(props: EdgeProps) {
     const newX = targetNode.position.x;
     const newY = targetNode.position.y;
 
-    let newNodes: Node[] = [];
+    let newNodes: AllNode[] = [];
     let newEdges: Edge[] = [];
     let updatedNodes: Node[] = [];
     let updatedEdges: Edge[] = [];
@@ -67,8 +67,8 @@ export default function AddEdge(props: EdgeProps) {
           type: NODE_TYPES.IF_ELSE_NODE,
           data: {
             label: NODE_LABELS.IF_ELSE_NODE,
-            branches: [`${NODE_LABELS.BRANCH_NODE} #1`],
-            else: NODE_LABELS.ELSE_NODE,
+            branches: [branchNodeId],
+            else: elseNodeId,
           },
           position: { x: newX, y: newY },
         },
@@ -77,7 +77,9 @@ export default function AddEdge(props: EdgeProps) {
         {
           id: branchNodeId,
           type: NODE_TYPES.BRANCH_NODE,
-          data: { label: `${NODE_LABELS.BRANCH_NODE} #1` },
+          data: {
+            label: `${NODE_LABELS.BRANCH_NODE} #1`,
+          },
           position: {
             x: newX - NODE_HORIZONTAL_SPACING / 2,
             y: newY + NODE_VERTICAL_SPACING,
@@ -125,7 +127,7 @@ export default function AddEdge(props: EdgeProps) {
             ...n,
             position: {
               ...n.position,
-              y: n.position.y + NODE_VERTICAL_SPACING * 3, // Leave space for the new nodes
+              y: n.position.y + NODE_VERTICAL_SPACING * 2, // Leave space for the new nodes
             },
           };
         }
@@ -190,28 +192,10 @@ export default function AddEdge(props: EdgeProps) {
         });
 
         // Compute new X position and offset
-        const newTargetX = newX - NODE_HORIZONTAL_SPACING / 2;
-        const xOffset = newTargetX - targetNode.position.x;
+        const xOffset = -NODE_HORIZONTAL_SPACING / 2;
 
         // Run BFS to find all nodes to shift: target node + all its descendants
-        const visited = new Set<string>();
-        const queue = [targetNode.id];
-
-        while (queue.length > 0) {
-          const currentId = queue.shift()!;
-          visited.add(currentId);
-
-          // Find children of current node (outgoing edges)
-          const children = edges
-            .filter((e) => e.source === currentId)
-            .map((e) => e.target);
-
-          for (const childId of children) {
-            if (!visited.has(childId)) {
-              queue.push(childId);
-            }
-          }
-        }
+        const visited = getDescendantsBFS(targetNode.id, edges);
 
         // Shift target and its descendents to be under Branch node
         updatedNodes = updatedNodes.map((n) => {
@@ -239,9 +223,12 @@ export default function AddEdge(props: EdgeProps) {
         position: { x: newX, y: newY },
       });
 
-      // Move target node and below nodes downward to avoid overlap
+      // Run BFS to find all nodes to shift: target node + all its descendants
+      const visited = getDescendantsBFS(targetNode.id, edges);
+
+      // Move target node and its descendants downward to avoid overlap
       updatedNodes = nodes.map((n) => {
-        if (n.position.y > newY || n.id === targetNode.id) {
+        if (visited.has(n.id)) {
           return {
             ...n,
             position: {
@@ -277,9 +264,6 @@ export default function AddEdge(props: EdgeProps) {
 
     setNodes([...updatedNodes, ...newNodes]);
     setEdges([...updatedEdges, ...newEdges]);
-
-    setSelectedNode(newNodes[0]);
-    setSheetOpen(true);
   };
 
   const [_, labelX, labelY] = getSmoothStepPath({
