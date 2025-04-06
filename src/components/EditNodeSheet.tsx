@@ -23,7 +23,11 @@ type EditNodeSheetProps = {
   onLabelChange: (label: string) => void;
   onDelete: () => void;
   onBranchesChange: (branchNodes: BranchNode[]) => void;
-  onElseChange: (elseNode: ElseNode, branchCount: number) => void;
+  onElseChange: (
+    elseNode: ElseNode,
+    branchCount: number,
+    isBranchesChanged: boolean
+  ) => void;
 };
 
 export default function EditNodeSheet({
@@ -37,6 +41,7 @@ export default function EditNodeSheet({
 }: EditNodeSheetProps) {
   const [label, setLabel] = useState<string>("");
   const [branchNodes, setBranchNodes] = useState<BranchNode[]>();
+  const [initialBranchNodes, setInitialBranchNodes] = useState<BranchNode[]>();
   const [elseNode, setElseNode] = useState<ElseNode>();
 
   const { getNodes } = useReactFlow();
@@ -54,6 +59,7 @@ export default function EditNodeSheet({
         })
         .filter((n): n is BranchNode => !!n);
       setBranchNodes(initialBranches);
+      setInitialBranchNodes(initialBranches);
 
       const foundElseNode = nodes.find(
         (n) => n.id === node.data.else && n.type === NODE_TYPES.ELSE_NODE
@@ -65,6 +71,16 @@ export default function EditNodeSheet({
     }
   }, [node]);
 
+  const branchesUpdated = () => {
+    if (!branchNodes || !initialBranchNodes) return false;
+    if (branchNodes.length !== initialBranchNodes.length) return true;
+
+    return branchNodes.some((b, i) => {
+      const initial = initialBranchNodes[i];
+      return b.id !== initial.id || b.data.label !== initial.data.label;
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!label.trim()) {
@@ -75,18 +91,14 @@ export default function EditNodeSheet({
     onLabelChange(label);
 
     if (node?.type === NODE_TYPES.IF_ELSE_NODE) {
-      if (branchNodes) {
+      const shouldUpdateBranches = !!branchNodes && branchesUpdated();
+
+      if (shouldUpdateBranches) {
         onBranchesChange(branchNodes);
+      }
 
-        const branchCount = branchNodes.length; // +1 for the else node
-
-        if (elseNode) {
-          setTimeout(() => {
-            onElseChange(elseNode, branchCount);
-          }, 0);
-        }
-      } else if (elseNode) {
-        onElseChange(elseNode, 0);
+      if (elseNode) {
+        onElseChange(elseNode, branchNodes?.length ?? 0, shouldUpdateBranches);
       }
     }
 
@@ -281,116 +293,7 @@ export default function EditNodeSheet({
               </div>
             </SheetFooter>
           </form>
-        ) : // <form onSubmit={handleSubmit} className="flex flex-col h-full">
-        //   <div className="px-4">
-        //     <Label htmlFor="label" className="pb-3">
-        //       Label
-        //     </Label>
-        //     <Input
-        //       id="label"
-        //       value={label}
-        //       onChange={(e) => setLabel(e.target.value)}
-        //     />
-
-        //     <div className="mt-10">
-        //       <Label className="pb-3 font-bold">Branches</Label>
-        //       <div>
-        //         {branches.map((branchId, index) => {
-        //           let branchNode, branchLabel;
-
-        //           if (Array.isArray(node?.data?.nodes)) {
-        //             branchNode = node?.data?.nodes?.find(
-        //               (n) => n.id === branchId
-        //             );
-        //             branchLabel = branchNode?.data?.label ?? "";
-        //           }
-
-        //           return (
-        //             <div
-        //               key={index}
-        //               className="flex items-center space-x-2 mb-2"
-        //             >
-        //               <Input
-        //                 value={branchLabel}
-        //                 onChange={(e) => {
-        //                   const newBranches = [...branches];
-        //                   newBranches[index] = e.target.value;
-        //                   setBranches(newBranches);
-        //                 }}
-        //               />
-        //               <Button
-        //                 variant="ghost"
-        //                 type="button"
-        //                 onClick={() => {
-        //                   if (branches.length === 1) {
-        //                     alert("Cannot delete the last branch!");
-        //                     return;
-        //                   }
-        //                   setBranches(branches.filter((_, i) => i !== index));
-        //                 }}
-        //               >
-        //                 <XIcon className="size-4" />
-        //               </Button>
-        //             </div>
-        //           );
-        //         })}
-        //       </div>
-        //       <div className="flex justify-end">
-        //         <Button
-        //           variant="ghost"
-        //           type="button"
-        //           onClick={() =>
-        //             setBranches([
-        //               ...branches,
-        //               `Branch #${branches.length + 1}`,
-        //             ])
-        //           }
-        //         >
-        //           + Add branch
-        //         </Button>
-        //       </div>
-        //     </div>
-
-        //     <div className="mt-10">
-        //       <Label className="pb-3 font-bold">Else</Label>
-        //       <Input
-        //         id="else"
-        //         value={elseValue}
-        //         onChange={(e) => setElseValue(e.target.value)}
-        //       />
-        //     </div>
-        //   </div>
-
-        //   <SheetFooter className="mt-auto">
-        //     <div className="flex justify-between items-center">
-        //       <Button
-        //         type="button"
-        //         variant="outline"
-        //         className="bg-rose-100 border-rose-400 text-rose-400 hover:bg-rose-400 hover:text-white"
-        //         onClick={onDelete}
-        //       >
-        //         Delete
-        //       </Button>
-
-        //       <div className="space-x-2">
-        //         <Button
-        //           type="button"
-        //           variant="ghost"
-        //           onClick={() => onOpenChange(false)}
-        //         >
-        //           Cancel
-        //         </Button>
-        //         <Button
-        //           type="submit"
-        //           className="bg-violet-700 text-white hover:bg-violet-800"
-        //         >
-        //           Save
-        //         </Button>
-        //       </div>
-        //     </div>
-        //   </SheetFooter>
-        // </form>
-        null}
+        ) : null}
       </SheetContent>
     </Sheet>
   );

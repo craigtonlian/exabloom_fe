@@ -14,7 +14,6 @@ import {
   Background,
   Controls,
   Edge,
-  MiniMap,
   type Node,
   ReactFlow,
   ReactFlowProvider,
@@ -99,9 +98,6 @@ export default function Workflow() {
 
   const handleBranchesChange = (newBranchNodes: BranchNodeType[]) => {
     if (!selectedNode) return;
-
-    console.log("handleBranchesChange called!");
-    console.log("newBranchNodes", newBranchNodes);
 
     const descendantIds = getDescendantsBFS(selectedNode.id, edges);
     const newEndNodes: Node[] = [];
@@ -196,9 +192,24 @@ export default function Workflow() {
     }
   };
 
-  const handleElseChange = (newElseNode: ElseNodeType, branchCount: number) => {
+  const handleElseChange = (
+    newElseNode: ElseNodeType,
+    branchCount: number,
+    isBranchesChanged: boolean
+  ) => {
     if (!selectedNode) return;
-    console.log("selectedNode", selectedNode);
+
+    if (!isBranchesChanged) {
+      // Update the label of the existing ElseNode
+      setNodes((ns) =>
+        ns.map((n) =>
+          n.id === newElseNode.id
+            ? { ...n, data: { ...n.data, label: newElseNode.data.label } }
+            : n
+        )
+      );
+      return;
+    }
 
     const baseX = selectedNode.position.x;
     const baseY = selectedNode.position.y;
@@ -298,13 +309,14 @@ export default function Workflow() {
         const branchNodeId = nodes.find(
           (n) =>
             n.type === NODE_TYPES.BRANCH_NODE &&
-            n.data.label === branches[0] &&
+            n.id === branches[0] &&
             edges.some((e) => e.source === selectedNode.id && e.target === n.id)
         )?.id;
 
         const parentId = incomingEdge?.source;
 
         if (!branchNodeId || !parentId) {
+          console.log(branchNodeId, "parenbt", parentId);
           console.log("Missing branch node or parent node for IF_ELSE_NODE");
           return;
         }
@@ -426,7 +438,6 @@ export default function Workflow() {
         >
           <Background />
           <Controls />
-          <MiniMap />
         </ReactFlow>
 
         <EditNodeSheet

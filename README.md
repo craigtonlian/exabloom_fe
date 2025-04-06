@@ -1,54 +1,66 @@
-# React + TypeScript + Vite
+# Exabloom Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React-based visual workflow editor that allows users to create, edit, and manage conditional logic using If-Else nodes, branches, and custom actions.
 
-Currently, two official plugins are available:
+## 🛠 Setup Instructions
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 1. Clone the repository
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+git clone https://github.com/craigtonlian/exabloom_fe.git
+cd exabloom_fe
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Install the required dependencies using npm:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm install
 ```
+
+### 3. Start the development server
+
+Run the following command to start the development server:
+
+```bash
+npm run dev
+```
+
+The application will be available at `http://localhost:5173` in your browser.
+
+---
+
+## 📂 Project Structure
+
+```markdown
+exabloom_fe/
+├── src/
+│ ├── config/
+│ │ └── db.js # Database connection setup
+│ └── routes/
+│ └── conversations.js # Routes for retrieving recent conversations
+├── scripts/
+│ ├── test_db.js # Script to test DB connection
+│ ├── create_tables.js # Script to create tables, triggers, and indexes
+│ ├── populate_tables.js # Script to populate tables with sample data
+│ ├── generate_contacts.js # Script to generate sample contact data
+│ └── generate_messages.js # Script to generate sample message data
+├── data/
+│ └── message_content.csv # Sample message data
+├── .env # Environment variables
+├── .gitignore # Ignore node_modules, .env, etc.
+├── package.json # Project dependencies
+├── README.md # Documentation
+└── server.js # Entry point for the backend server
+```
+
+---
+
+## 📋 Tech Stack
+
+- **React**
+- **TypeScript**
+- **React Flow**
+- **Vite**
+- **TailwindCSS**
